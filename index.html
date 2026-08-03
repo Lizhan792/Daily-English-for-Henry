@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Daily Quest · English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#10142B;
+    --bg-panel:#1A1F42;
+    --bg-panel-alt:#232A57;
+    --cyan:#35E0C0;
+    --coral:#FF6B57;
+    --gold:#FFC145;
+    --silver:#9FA8FF;
+    --bronze:#E39B6B;
+    --text:#F5F3F7;
+    --muted:#9BA3C6;
+    --line:rgba(255,255,255,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 20% -10%, rgba(53,224,192,0.16), transparent 45%),
+      radial-gradient(circle at 100% 0%, rgba(255,107,87,0.14), transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:'Poppins','Noto Sans KR',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:24px 14px;
+  }
+  .app{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  h1,h2,h3{font-family:'Baloo 2','Noto Sans KR',sans-serif; margin:0;}
+  .kr{font-family:'Noto Sans KR',sans-serif;}
+  .card{
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-alt));
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+  .screen{display:none; flex-direction:column; gap:16px;}
+  .screen.active{display:flex;}
+  button{
+    font-family:'Baloo 2','Noto Sans KR',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:16px;
+    font-size:16px;
+    letter-spacing:0.2px;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--cyan), #23B79F);
+    color:#0A2A24;
+    font-weight:700;
+    padding:16px;
+    box-shadow:0 10px 24px -8px rgba(53,224,192,0.5);
+  }
+  .btn-primary:active{transform:translateY(1px);}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:12px;
+    font-weight:600;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--cyan);
+    font-weight:700;
+  }
+  /* ---------- LOCK SCREEN ---------- */
+  #screen-lock{align-items:center; text-align:center; margin-top:14vh;}
+  #screen-lock .card{width:100%;}
+  .lock-badge{
+    width:64px;height:64px;border-radius:18px;
+    background:linear-gradient(135deg, var(--cyan), var(--coral));
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px; margin:0 auto 14px auto;
+  }
+  #code-input, .code-input{
+    width:100%;
+    background:var(--bg-deep);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-size:26px;
+    letter-spacing:10px;
+    text-align:center;
+    padding:14px;
+    border-radius:14px;
+    margin:16px 0 10px 0;
+    font-family:'Baloo 2';
+  }
+  #code-error{color:var(--coral); font-size:13px; min-height:18px;}
+  /* ---------- HOME ---------- */
+  .hud{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px 18px;
+  }
+  .hud-stat{text-align:center;}
+  .hud-num{font-family:'Baloo 2'; font-size:20px; font-weight:800;}
+  .hud-label{font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase;}
+  .mission-card{
+    background:linear-gradient(135deg, #24306B, #1A1F42);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:22px;
+  }
+  .mission-topic{font-size:22px; margin:8px 0 4px 0;}
+  .mission-sub{color:var(--muted); font-size:13px; margin-bottom:16px;}
+  .calendar{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .cal-cell{
+    aspect-ratio:1;
+    border-radius:8px;
+    background:var(--bg-panel);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+    color:var(--muted);
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .cal-cell.done{border:none;}
+  .cal-cell.today{outline:2px solid var(--cyan);}
+  /* ---------- QUEST / CONVERSATION ---------- */
+  #screen-quest{gap:14px;}
+  .timer-ring{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 4px;
+  }
+  .timer-text{font-family:'Baloo 2'; font-size:22px; font-weight:800;}
+  .topic-pill{
+    background:var(--bg-panel-alt);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:12px;
+    color:var(--cyan);
+    font-weight:600;
+  }
+  .avatar-wrap{
+    display:flex; justify-content:center; padding:10px 0 0 0;
+  }
+  #partnerAvatar{width:150px; height:150px; transition:transform .2s;}
+  #partnerAvatar.talking{animation:bob .5s infinite alternate;}
+  @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+  .caption-box{
+    min-height:70px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .caption-role{font-size:10px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:4px;}
+  .live-caption{color:var(--muted); font-style:italic; min-height:18px; font-size:13px; text-align:center;}
+  .mic-row{display:flex; justify-content:center; padding:6px 0;}
+  #micBtn{
+    width:88px; height:88px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #3EF0CE, #1FA98C);
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px;
+    box-shadow:0 0 0 0 rgba(53,224,192,0.6);
+  }
+  #micBtn.listening{animation:pulse 1.1s infinite;}
+  #micBtn.disabled{opacity:0.35; pointer-events:none;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(53,224,192,0.55);}
+    70%{box-shadow:0 0 0 18px rgba(53,224,192,0);}
+    100%{box-shadow:0 0 0 0 rgba(53,224,192,0);}
+  }
+  .mic-hint{text-align:center; font-size:12px; color:var(--muted);}
+  textarea#fallbackInput{
+    width:100%; background:var(--bg-deep); color:var(--text);
+    border:1px solid var(--line); border-radius:12px; padding:12px;
+    font-family:'Poppins'; font-size:14px; resize:none;
+  }
+  /* ---------- RESULT ---------- */
+  .score-hero{text-align:center; padding:10px 0 4px 0;}
+  .score-num{font-family:'Baloo 2'; font-size:64px; font-weight:800; line-height:1;}
+  .tier-chip{
+    display:inline-block; margin-top:8px; padding:6px 18px; border-radius:999px;
+    font-family:'Baloo 2'; font-weight:700; font-size:14px;
+  }
+  .bar-row{display:flex; align-items:center; gap:10px; margin:8px 0;}
+  .bar-label{width:100px; font-size:12px; color:var(--muted);}
+  .bar-track{flex:1; height:10px; border-radius:6px; background:var(--bg-deep); overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--cyan), var(--coral));}
+  .stamp-card{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:20px; border-radius:20px; text-align:center;
+  }
+  .feedback-box{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; padding:14px; font-size:13px;
+  }
+  .loading{display:flex; flex-direction:column; align-items:center; gap:10px; padding:30px 0; color:var(--muted); font-size:13px;}
+  .spinner{width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--cyan); animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .hidden{display:none !important;}
+
+  /* ---------- ROLE SELECT ---------- */
+  #screen-role{align-items:stretch; margin-top:12vh;}
+  .role-btn{
+    display:flex; align-items:center; gap:14px;
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-alt));
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:20px;
+    text-align:left;
+    color:var(--text);
+    width:100%;
+  }
+  .role-emoji{font-size:32px;}
+  .role-title{font-family:'Baloo 2'; font-size:17px; font-weight:700;}
+  .role-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+
+  /* ---------- ADMIN ---------- */
+  .admin-stat-row{display:flex; gap:10px;}
+  .admin-stat{
+    flex:1; background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
+    padding:12px; text-align:center;
+  }
+  .admin-stat .num{font-family:'Baloo 2'; font-size:22px; font-weight:800;}
+  .admin-stat .lbl{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;}
+  .trend-row{display:flex; align-items:flex-end; gap:6px; height:70px; padding:6px 2px 0 2px;}
+  .trend-bar{flex:1; background:linear-gradient(180deg, var(--cyan), var(--coral)); border-radius:6px 6px 2px 2px; min-height:4px;}
+  .trend-labels{display:flex; gap:6px; padding:2px;}
+  .trend-labels span{flex:1; text-align:center; font-size:9px; color:var(--muted);}
+  .log-entry{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:14px;
+    padding:14px; margin-bottom:10px; cursor:pointer;
+  }
+  .log-top{display:flex; justify-content:space-between; align-items:center;}
+  .log-date{font-family:'Baloo 2'; font-weight:700; font-size:14px;}
+  .log-tier{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; color:#1A1F42;}
+  .log-topic{font-size:12px; color:var(--muted); margin-top:4px;}
+  .log-detail{margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:12px; display:none;}
+  .log-detail.open{display:block;}
+  .log-detail .kr-fb{color:var(--text); line-height:1.6; margin-bottom:8px;}
+  .transcript-line{margin-bottom:4px; line-height:1.5;}
+  .transcript-line b{color:var(--cyan);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LOCK SCREEN -->
+  <div id="screen-lock" class="screen active">
+    <div class="card">
+      <div class="lock-badge">🎮</div>
+      <div class="eyebrow">DAILY QUEST · ENGLISH</div>
+      <h1 style="margin-top:6px;">Ready Player One</h1>
+      <p class="kr" style="color:var(--muted); font-size:13px; margin-top:6px;">오늘의 영어 대화 퀘스트에 입장하려면<br>본인 확인 코드를 입력하세요</p>
+      <input id="code-input" inputmode="numeric" maxlength="6" placeholder="••••••">
+      <div id="code-error"></div>
+      <button class="btn-primary" style="width:100%;" onclick="tryUnlock()">ENTER QUEST</button>
+    </div>
+  </div>
+
+  <!-- ROLE SELECT -->
+  <div id="screen-role" class="screen">
+    <div class="eyebrow" style="text-align:center;">WHO'S HERE?</div>
+    <button class="role-btn" onclick="enterStudentMode()">
+      <div class="role-emoji">🎮</div>
+      <div><div class="role-title">아들 모드</div><div class="role-sub kr">오늘의 영어 퀘스트 시작하기</div></div>
+    </button>
+    <button class="role-btn" onclick="showAdminLock()">
+      <div class="role-emoji">📋</div>
+      <div><div class="role-title">엄마 모드</div><div class="role-sub kr">학습 현황 · 상세 피드백 보기</div></div>
+    </button>
+  </div>
+
+  <!-- ADMIN SECOND LOCK -->
+  <div id="screen-admin-lock" class="screen">
+    <div class="card" style="margin-top:14vh;">
+      <div class="lock-badge">🔐</div>
+      <div class="eyebrow">MOM MODE</div>
+      <h1 style="margin-top:6px; font-size:22px;">한 번 더 확인할게요</h1>
+      <p class="kr" style="color:var(--muted); font-size:13px; margin-top:6px;">엄마 모드 접근 코드를 입력하세요</p>
+      <input id="admin-code-input" class="code-input" inputmode="numeric" maxlength="6" placeholder="••••••">
+      <div id="admin-code-error" style="color:var(--coral); font-size:13px; min-height:18px;"></div>
+      <button class="btn-primary" style="width:100%;" onclick="tryAdminUnlock()">ENTER</button>
+      <button class="btn-ghost kr" style="width:100%; margin-top:8px;" onclick="backToRole()">뒤로가기</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen">
+    <div style="display:flex; justify-content:flex-end;">
+      <button class="btn-ghost kr" style="padding:6px 12px; font-size:12px;" onclick="backToRole()">모드 변경</button>
+    </div>
+    <div class="hud">
+      <div class="hud-stat"><div class="hud-num" id="hud-streak">0</div><div class="hud-label kr">연속 기록</div></div>
+      <div class="hud-stat"><div class="hud-num" id="hud-total">0</div><div class="hud-label kr">완료한 날</div></div>
+      <div class="hud-stat"><div class="hud-num" id="hud-avg">–</div><div class="hud-label kr">평균 점수</div></div>
+    </div>
+
+    <div class="mission-card">
+      <div class="eyebrow">TODAY'S MISSION</div>
+      <div class="mission-topic" id="today-topic">—</div>
+      <div class="mission-sub kr" id="today-sub">오늘의 대화 주제</div>
+      <button class="btn-primary" style="width:100%;" id="startBtn" onclick="startQuest()">🎤 START QUEST (20 MIN)</button>
+    </div>
+
+    <div class="card">
+      <h3 class="kr" style="font-size:14px; color:var(--muted); margin-bottom:12px;">이번 달 기록</h3>
+      <div class="calendar" id="calendar"></div>
+    </div>
+  </div>
+
+  <!-- QUEST / CONVERSATION -->
+  <div id="screen-quest" class="screen">
+    <div class="timer-row" style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="topic-pill" id="quest-topic-pill">Topic</span>
+      <span class="timer-text" id="timer">20:00</span>
+    </div>
+
+    <div class="avatar-wrap"><div id="partnerAvatar"></div></div>
+
+    <div class="caption-box">
+      <div class="caption-role">PARTNER SAYS</div>
+      <div id="partnerText">Getting ready...</div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-role kr">내가 말한 내용</div>
+      <div id="myText" style="color:var(--muted);">—</div>
+    </div>
+
+    <div id="voiceControls">
+      <div class="live-caption" id="liveCaption">&nbsp;</div>
+      <div class="mic-row">
+        <button id="micBtn" onclick="manualMicTap()">🎙️</button>
+      </div>
+      <div class="mic-hint kr" id="micHint">마이크 버튼을 누르고 영어로 말해보세요</div>
+    </div>
+
+    <div id="fallbackControls" class="hidden">
+      <textarea id="fallbackInput" rows="3" placeholder="Type your answer in English..."></textarea>
+      <button class="btn-primary" style="width:100%; margin-top:8px;" onclick="sendFallbackText()">SEND</button>
+    </div>
+
+    <button class="btn-ghost kr" style="width:100%;" onclick="endQuest()">퀘스트 종료하고 채점받기</button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div id="result-loading" class="card loading">
+      <div class="spinner"></div>
+      <div class="kr">오늘의 대화를 채점하는 중...</div>
+    </div>
+    <div id="result-content" class="hidden">
+      <div class="card score-hero">
+        <div class="eyebrow">QUEST COMPLETE</div>
+        <div class="score-num" id="result-score">0</div>
+        <div class="tier-chip" id="result-tier">Good</div>
+      </div>
+      <div class="card">
+        <div class="bar-row"><div class="bar-label">Fluency</div><div class="bar-track"><div class="bar-fill" id="bar-fluency" style="width:0%"></div></div></div>
+        <div class="bar-row"><div class="bar-label">Grammar</div><div class="bar-track"><div class="bar-fill" id="bar-grammar" style="width:0%"></div></div></div>
+        <div class="bar-row"><div class="bar-label">Pronunciation</div><div class="bar-track"><div class="bar-fill" id="bar-pron" style="width:0%"></div></div></div>
+      </div>
+      <div class="card stamp-card" id="stamp-card">
+        <div class="eyebrow">TODAY'S STAMP</div>
+        <div id="stampSvgWrap"></div>
+      </div>
+      <div class="feedback-box">
+        <div style="margin-bottom:8px;" id="feedback-en"></div>
+        <div class="kr" style="color:var(--muted);" id="feedback-kr"></div>
+      </div>
+      <button class="btn-primary" style="width:100%;" onclick="goHome()">BACK TO BASE</button>
+    </div>
+  </div>
+
+  <!-- ADMIN (MOM) -->
+  <div id="screen-admin" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 class="kr" style="font-size:18px;">학습 리포트</h2>
+      <button class="btn-ghost kr" onclick="backToRole()">모드 변경</button>
+    </div>
+
+    <div class="admin-stat-row">
+      <div class="admin-stat"><div class="num" id="admin-streak">0</div><div class="lbl kr">연속</div></div>
+      <div class="admin-stat"><div class="num" id="admin-total">0</div><div class="lbl kr">완료 일수</div></div>
+      <div class="admin-stat"><div class="num" id="admin-avg">–</div><div class="lbl kr">평균 점수</div></div>
+    </div>
+
+    <div class="card">
+      <h3 class="kr" style="font-size:13px; color:var(--muted); margin-bottom:10px;">최근 7일 점수 추이</h3>
+      <div class="trend-row" id="trend-row"></div>
+      <div class="trend-labels" id="trend-labels"></div>
+    </div>
+
+    <div>
+      <h3 class="kr" style="font-size:13px; color:var(--muted); margin:4px 0 10px 4px;">일자별 상세 기록</h3>
+      <div id="admin-log"></div>
+      <div id="admin-empty" class="card kr" style="text-align:center; color:var(--muted); display:none;">아직 완료한 기록이 없어요</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const PASSCODE = "201504";
+const ADMIN_PASSCODE = "197902";
+const TOPICS = [
+  {en:"Roblox Rivals battle stories", kr:"로블록스 라이벌즈 이야기"},
+  {en:"Favorite Overwatch hero", kr:"오버워치 최애 캐릭터"},
+  {en:"Memories from Saipan camp", kr:"사이판 캠프 추억"},
+  {en:"Favorite foods from other countries", kr:"세계 여러 나라 음식"},
+  {en:"Weekend plans", kr:"이번 주말 계획"},
+  {en:"Making friends at school", kr:"학교 친구 이야기"},
+  {en:"Dream vacation country", kr:"가보고 싶은 나라"},
+  {en:"If you designed your own game character", kr:"나만의 게임 캐릭터 만들기"},
+  {en:"A pet you have or want", kr:"키우고 싶은 반려동물"},
+  {en:"A movie or show you love", kr:"좋아하는 영화나 방송"}
+];
+const SESSION_MINUTES = 20;
+const TEACHERS = [
+  {name:"Ms. Emma", gender:"female", voiceNames:["Samantha","Ava","Allison","Susan","Zoe","Google US English","Microsoft Aria Online (Natural) - English (United States)","Microsoft Jenny Online (Natural) - English (United States)"]},
+  {name:"Mr. Jason", gender:"male", voiceNames:["Alex","Tom","Aaron","Fred","Microsoft Guy Online (Natural) - English (United States)","Microsoft Andrew Online (Natural) - English (United States)"]}
+];
+let todayTeacher = TEACHERS[0];
+
+/* ================= STATE ================= */
+let unlocked = false;
+let todayTopic = null;
+let todayStr = "";
+let messages = []; // {role:'user'|'assistant', content:string}
+let confidences = [];
+let recognition = null;
+let listening = false;
+let timerInterval = null;
+let secondsLeft = SESSION_MINUTES*60;
+let sessionEnding = false;
+
+function pad(n){return n.toString().padStart(2,'0');}
+function dateStr(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function dayOfYear(d){const s=new Date(d.getFullYear(),0,0); return Math.floor((d-s)/86400000);}
+
+/* ================= LOCK ================= */
+function tryUnlock(){
+  const val = document.getElementById('code-input').value.trim();
+  if(val === PASSCODE){
+    unlocked = true;
+    document.getElementById('screen-lock').classList.remove('active');
+    document.getElementById('screen-role').classList.add('active');
+  } else {
+    document.getElementById('code-error').textContent = "코드가 올바르지 않아요. 다시 시도해주세요.";
+  }
+}
+document.getElementById('code-input').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') tryUnlock();
+});
+document.getElementById('admin-code-input').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') tryAdminUnlock();
+});
+
+/* ================= ROLE NAV ================= */
+function enterStudentMode(){
+  document.getElementById('screen-role').classList.remove('active');
+  document.getElementById('screen-home').classList.add('active');
+  initHome();
+}
+function showAdminLock(){
+  document.getElementById('screen-role').classList.remove('active');
+  document.getElementById('screen-admin-lock').classList.add('active');
+  document.getElementById('admin-code-input').value = '';
+  document.getElementById('admin-code-error').textContent = '';
+}
+function tryAdminUnlock(){
+  const val = document.getElementById('admin-code-input').value.trim();
+  if(val === ADMIN_PASSCODE){
+    document.getElementById('screen-admin-lock').classList.remove('active');
+    document.getElementById('screen-admin').classList.add('active');
+    initAdmin();
+  } else {
+    document.getElementById('admin-code-error').textContent = "코드가 올바르지 않아요.";
+  }
+}
+function enterAdminMode(){
+  document.getElementById('screen-role').classList.remove('active');
+  document.getElementById('screen-admin').classList.add('active');
+  initAdmin();
+}
+function backToRole(){
+  document.getElementById('screen-admin').classList.remove('active');
+  document.getElementById('screen-admin-lock').classList.remove('active');
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-role').classList.add('active');
+}
+
+/* ================= ADMIN (MOM) ================= */
+async function initAdmin(){
+  const index = await loadIndex();
+  document.getElementById('admin-total').textContent = index.length;
+  if(index.length){
+    const avg = Math.round(index.reduce((a,b)=>a+b.total,0)/index.length);
+    document.getElementById('admin-avg').textContent = avg;
+  } else {
+    document.getElementById('admin-avg').textContent = '–';
+  }
+  let streak = 0, d = new Date();
+  const dates = new Set(index.map(e=>e.date));
+  while(dates.has(dateStr(d))){ streak++; d.setDate(d.getDate()-1); }
+  document.getElementById('admin-streak').textContent = streak;
+
+  renderTrend(index);
+  renderAdminLog(index);
+}
+
+function renderTrend(index){
+  const sorted = [...index].sort((a,b)=> a.date.localeCompare(b.date));
+  const last7 = sorted.slice(-7);
+  const row = document.getElementById('trend-row');
+  const labels = document.getElementById('trend-labels');
+  row.innerHTML = ''; labels.innerHTML = '';
+  if(last7.length === 0){
+    row.innerHTML = '<div class="kr" style="color:var(--muted); font-size:12px; margin:auto;">데이터 없음</div>';
+    return;
+  }
+  last7.forEach(e=>{
+    const bar = document.createElement('div');
+    bar.className = 'trend-bar';
+    bar.style.height = Math.max(6, e.total) + '%';
+    bar.title = e.date + ': ' + e.total;
+    row.appendChild(bar);
+    const lbl = document.createElement('span');
+    const parts = e.date.split('-');
+    lbl.textContent = parts[1]+'/'+parts[2];
+    labels.appendChild(lbl);
+  });
+}
+
+async function renderAdminLog(index){
+  const log = document.getElementById('admin-log');
+  const empty = document.getElementById('admin-empty');
+  log.innerHTML = '';
+  if(index.length === 0){ empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  const sorted = [...index].sort((a,b)=> b.date.localeCompare(a.date));
+  sorted.forEach(entry=>{
+    const el = document.createElement('div');
+    el.className = 'log-entry';
+    el.innerHTML = `
+      <div class="log-top">
+        <div class="log-date">${entry.date}</div>
+        <div class="log-tier">${entry.tier}</div>
+      </div>
+      <div class="log-topic kr">${entry.topic} · ${entry.total}점</div>
+      <div class="log-detail" id="detail-${entry.date}"><div class="kr" style="color:var(--muted);">불러오는 중...</div></div>
+    `;
+    const tierEl = el.querySelector('.log-tier');
+    tierEl.style.background = tierColor(entry.tier);
+    el.addEventListener('click', ()=> toggleLogDetail(entry.date));
+    log.appendChild(el);
+  });
+}
+
+let loadedDetails = {};
+async function toggleLogDetail(date){
+  const detail = document.getElementById('detail-'+date);
+  const isOpen = detail.classList.contains('open');
+  if(isOpen){ detail.classList.remove('open'); return; }
+  detail.classList.add('open');
+  if(!loadedDetails[date]){
+    try{
+      const raw = localStorage.getItem('day:'+date);
+      if(!raw) throw new Error('not found');
+      loadedDetails[date] = JSON.parse(raw);
+    }catch(e){
+      detail.innerHTML = '<div class="kr" style="color:var(--muted);">상세 기록을 불러올 수 없어요</div>';
+      return;
+    }
+  }
+  const d = loadedDetails[date];
+  let html = `<div class="kr kr-fb"><b>엄마를 위한 코멘트</b><br>${d.feedbackKr || '-'}</div>`;
+  html += `<div style="color:var(--muted); margin-bottom:6px;">Fluency ${d.fluency} · Grammar ${d.grammar} · Pronunciation ${d.pronunciation}</div>`;
+  html += `<div class="kr" style="color:var(--muted); margin-bottom:6px;">대화 전문</div>`;
+  (d.transcript||[]).forEach(m=>{
+    html += `<div class="transcript-line"><b>${m.role==='user'?'STUDENT':'PARTNER'}:</b> ${m.content}</div>`;
+  });
+  detail.innerHTML = html;
+}
+
+/* ================= HOME ================= */
+async function initHome(){
+  const now = new Date();
+  todayStr = dateStr(now);
+  todayTopic = TOPICS[dayOfYear(now) % TOPICS.length];
+  document.getElementById('today-topic').textContent = todayTopic.en;
+  document.getElementById('today-sub').textContent = todayTopic.kr;
+
+  const index = await loadIndex();
+  const todayEntry = index.find(e=>e.date===todayStr);
+  if(todayEntry){
+    document.getElementById('startBtn').textContent = "✅ TODAY'S QUEST DONE — TAP TO REPLAY LOG";
+  }
+  renderHud(index);
+  renderCalendar(index, now);
+}
+
+async function loadIndex(){
+  try{
+    const raw = localStorage.getItem('progress-index');
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+async function saveIndex(index){
+  localStorage.setItem('progress-index', JSON.stringify(index));
+}
+
+function renderHud(index){
+  document.getElementById('hud-total').textContent = index.length;
+  if(index.length){
+    const avg = Math.round(index.reduce((a,b)=>a+b.total,0)/index.length);
+    document.getElementById('hud-avg').textContent = avg;
+  }
+  // streak calc
+  let streak = 0;
+  let d = new Date();
+  const dates = new Set(index.map(e=>e.date));
+  while(dates.has(dateStr(d))){
+    streak++;
+    d.setDate(d.getDate()-1);
+  }
+  document.getElementById('hud-streak').textContent = streak;
+}
+
+function tierColor(tier){
+  if(tier==='Excellent') return 'var(--gold)';
+  if(tier==='Great') return 'var(--silver)';
+  if(tier==='Good') return 'var(--bronze)';
+  return 'var(--muted)';
+}
+
+function renderCalendar(index, now){
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+  const year = now.getFullYear(), month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const map = {};
+  index.forEach(e=>{ map[e.date]=e; });
+  for(let day=1; day<=daysInMonth; day++){
+    const ds = year+"-"+pad(month+1)+"-"+pad(day);
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    if(ds === todayStr) cell.classList.add('today');
+    const entry = map[ds];
+    if(entry){
+      cell.classList.add('done');
+      cell.style.background = tierColor(entry.tier);
+      cell.style.color = '#1A1F42';
+      cell.style.fontWeight = '700';
+      cell.textContent = day;
+    } else {
+      cell.textContent = day;
+    }
+    cal.appendChild(cell);
+  }
+}
+
+function goHome(){
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-home').classList.add('active');
+  initHome();
+}
+
+/* ================= QUEST / CONVERSATION ================= */
+function startQuest(){
+  messages = [];
+  confidences = [];
+  secondsLeft = SESSION_MINUTES*60;
+  sessionEnding = false;
+  todayTeacher = TEACHERS[dayOfYear(new Date()) % TEACHERS.length];
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-quest').classList.add('active');
+  document.getElementById('quest-topic-pill').textContent = todayTopic.en;
+  document.getElementById('partnerAvatar').innerHTML = idleAvatarSvg(todayTeacher.gender);
+  document.querySelector('#screen-quest .caption-box .caption-role').textContent = todayTeacher.name.toUpperCase() + ' SAYS';
+  // warm up voice list (Safari/Chrome load voices asynchronously)
+  if('speechSynthesis' in window){ window.speechSynthesis.getVoices(); }
+  startTimer();
+  setupSpeech();
+  kickOffConversation();
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    secondsLeft--;
+    if(secondsLeft<=0){
+      clearInterval(timerInterval);
+      endQuest();
+      return;
+    }
+    document.getElementById('timer').textContent = Math.floor(secondsLeft/60)+":"+pad(secondsLeft%60);
+  },1000);
+}
+
+function setupSpeech(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  // Always show the typing fallback too — Claude's published-artifact iframe can
+  // silently block microphone access even after the browser grants permission,
+  // so typing must always be available as a working path.
+  document.getElementById('fallbackControls').classList.remove('hidden');
+  if(!SR){
+    document.getElementById('voiceControls').classList.add('hidden');
+    document.getElementById('micHint').textContent = "이 브라우저는 음성 인식을 지원하지 않아요. 아래에 타이핑해서 대화하세요.";
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event)=>{
+    let interim = '', final = '', conf = null;
+    for(let i=event.resultIndex; i<event.results.length; i++){
+      const r = event.results[i];
+      if(r.isFinal){ final += r[0].transcript; conf = r[0].confidence; }
+      else interim += r[0].transcript;
+    }
+    document.getElementById('liveCaption').textContent = interim ? interim : '\u00A0';
+    if(final){
+      document.getElementById('liveCaption').textContent = '\u00A0';
+      handleUserSpeech(final.trim(), conf);
+    }
+  };
+  recognition.onerror = (e)=>{
+    listening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+    if(e.error === 'no-speech'){
+      document.getElementById('micHint').textContent = "잘 안들렸어요. 마이크를 다시 눌러 말해보세요.";
+    } else if(e.error === 'not-allowed'){
+      document.getElementById('micHint').textContent = "이 화면에서는 마이크가 막혀있어요. 아래 입력창에 타이핑해서 대화해보세요.";
+    } else {
+      document.getElementById('micHint').textContent = "마이크에 문제가 있어요. 아래 입력창에 타이핑해서 대화해보세요.";
+    }
+  };
+  recognition.onend = ()=>{
+    listening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+  };
+}
+
+function manualMicTap(){
+  if(sessionEnding) return;
+  if(!recognition) return;
+  if(listening){
+    recognition.stop();
+    return;
+  }
+  try{
+    recognition.start();
+    listening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micHint').textContent = "듣고 있어요...";
+    // Some environments (e.g. embedded iframes) block getUserMedia without
+    // ever firing onresult/onerror. If nothing happens in a few seconds,
+    // nudge toward typing instead of leaving the mic looking "stuck".
+    setTimeout(()=>{
+      if(listening){
+        document.getElementById('micHint').textContent = "마이크 반응이 없어요. 아래 입력창에 타이핑해서 대화해보세요.";
+      }
+    }, 6000);
+  }catch(e){ /* already started */ }
+}
+
+function sendFallbackText(){
+  const val = document.getElementById('fallbackInput').value.trim();
+  if(!val) return;
+  document.getElementById('fallbackInput').value = '';
+  handleUserSpeech(val, null);
+}
+
+async function kickOffConversation(){
+  document.getElementById('partnerText').textContent = "Thinking of a fun question...";
+  const reply = await callClaudeConversation(true);
+  presentPartnerReply(reply);
+}
+
+async function handleUserSpeech(text, confidence){
+  document.getElementById('myText').textContent = text;
+  document.getElementById('myText').style.color = 'var(--text)';
+  messages.push({role:'user', content:text});
+  if(typeof confidence === 'number' && !isNaN(confidence)) confidences.push(confidence);
+  document.getElementById('micBtn').classList.add('disabled');
+  document.getElementById('partnerText').textContent = "...";
+  const reply = await callClaudeConversation(false);
+  document.getElementById('micBtn').classList.remove('disabled');
+  presentPartnerReply(reply);
+}
+
+function presentPartnerReply(text){
+  messages.push({role:'assistant', content:text});
+  document.getElementById('partnerText').textContent = text;
+  speak(text);
+}
+
+async function callClaudeConversation(isOpening){
+  const sys = `You are ${todayTeacher.name}, a cheerful, patient young American English conversation partner (around 20 years old, ${todayTeacher.gender}) for an 11-year-old Korean 5th grader. He has pretty good pronunciation (did a 1-month English camp in Saipan and studies with a Korean English program) but needs practice keeping a conversation going naturally. Use very simple, everyday vocabulary and SHORT sentences: max 2 short sentences per turn. Be warm and playful like a friendly older kid, never like a teacher grading him. Today's topic is: "${todayTopic.en}". Stay loosely on this topic but follow his lead if he goes elsewhere. ALWAYS end your turn with exactly one simple, curious follow-up question to keep the conversation going. Do not correct his grammar directly or explain rules, just model natural English. Do not use emojis, asterisks, or stage directions. Plain spoken English only, since this will be read aloud.`;
+
+  const apiMessages = isOpening
+    ? [{role:'user', content:'Start the conversation now with a short, fun greeting and your first simple question about the topic.'}]
+    : messages.map(m=>({role:m.role, content:m.content}));
+
+  try{
+    const response = await fetch("/.netlify/functions/ai", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-5",
+        max_tokens:200,
+        system: sys,
+        messages: apiMessages
+      })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    return textBlock ? textBlock.text.trim() : "Sorry, can you say that again?";
+  }catch(e){
+    return "Sorry, I had trouble hearing that. Can you try again?";
+  }
+}
+
+function pickVoiceFor(teacher){
+  const voices = window.speechSynthesis.getVoices();
+  if(!voices.length) return null;
+  // 1) try an exact preferred name match, in priority order
+  for(const name of teacher.voiceNames){
+    const hit = voices.find(v=> v.name === name);
+    if(hit) return hit;
+  }
+  // 2) try a loose "includes" match on preferred names (handles regional suffixes)
+  for(const name of teacher.voiceNames){
+    const hit = voices.find(v=> v.name.toLowerCase().includes(name.toLowerCase()));
+    if(hit) return hit;
+  }
+  // 3) fall back to any US English voice
+  const usVoice = voices.find(v=> v.lang === 'en-US');
+  if(usVoice) return usVoice;
+  // 4) fall back to any English voice at all
+  return voices.find(v=> v.lang && v.lang.startsWith('en')) || null;
+}
+
+function speakWithVoices(text, avatar){
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-US';
+  const voice = pickVoiceFor(todayTeacher);
+  if(voice){
+    utter.voice = voice;
+    utter.lang = voice.lang || 'en-US';
+  }
+  // gender-flavored pitch/rate as a fallback cue when the OS/browser only exposes one generic voice
+  if(todayTeacher.gender === 'female'){ utter.pitch = 1.08; utter.rate = 0.98; }
+  else { utter.pitch = 0.88; utter.rate = 0.95; }
+  utter.onend = ()=>{ avatar.classList.remove('talking'); };
+  utter.onerror = ()=>{ avatar.classList.remove('talking'); };
+  window.speechSynthesis.speak(utter);
+}
+
+function speak(text){
+  const avatar = document.getElementById('partnerAvatar');
+  avatar.classList.add('talking');
+  if(!('speechSynthesis' in window)){ avatar.classList.remove('talking'); return; }
+  const voices = window.speechSynthesis.getVoices();
+  if(voices.length === 0){
+    // voice list loads async on first use in some browsers - wait for it once
+    window.speechSynthesis.onvoiceschanged = ()=>{ speakWithVoices(text, avatar); };
+    // safety timeout in case the event never fires
+    setTimeout(()=>{ if(window.speechSynthesis.getVoices().length) speakWithVoices(text, avatar); }, 300);
+  } else {
+    speakWithVoices(text, avatar);
+  }
+}
+
+function idleAvatarSvg(gender){
+  const hair = gender === 'female'
+    ? `<path d="M18 62 Q75 8 132 62 Q136 95 122 118 L118 78 Q75 40 32 78 L28 118 Q14 95 18 62 Z" fill="#232952"/>`
+    : `<path d="M30 55 Q75 15 120 55 Q120 40 75 35 Q30 40 30 55 Z" fill="#232952"/>`;
+  return `<svg viewBox="0 0 150 150" width="150" height="150">
+    <circle cx="75" cy="80" r="55" fill="#2B336B"/>
+    <circle cx="75" cy="78" r="46" fill="#FFDDBF"/>
+    ${hair}
+    <circle cx="58" cy="82" r="4" fill="#2A2A2A"/>
+    <circle cx="92" cy="82" r="4" fill="#2A2A2A"/>
+    <path d="M60 100 Q75 110 90 100" stroke="#B5603E" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ================= END / SCORING ================= */
+async function endQuest(){
+  if(sessionEnding) return;
+  sessionEnding = true;
+  clearInterval(timerInterval);
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  if(recognition && listening) recognition.stop();
+
+  document.getElementById('screen-quest').classList.remove('active');
+  document.getElementById('screen-result').classList.add('active');
+  document.getElementById('result-loading').classList.remove('hidden');
+  document.getElementById('result-content').classList.add('hidden');
+
+  const userTurns = messages.filter(m=>m.role==='user');
+  if(userTurns.length === 0){
+    // nothing spoken, avoid API call
+    showResult({fluency:60, grammar:60, feedback_en:"Let's talk more next time!", feedback_kr:"오늘은 대화가 짧았어요. 내일은 조금 더 이야기해봐요!"}, 60);
+    return;
+  }
+
+  const transcript = messages.map(m=> (m.role==='user'?'STUDENT: ':'PARTNER: ')+m.content).join('\n');
+  const pronScore = confidences.length
+    ? Math.round((confidences.reduce((a,b)=>a+b,0)/confidences.length)*100)
+    : 85;
+
+  const sys = `You are an encouraging English teacher evaluating a short spoken conversation transcript from an 11-year-old Korean EFL learner (5th grade, decent pronunciation, working on conversational flow). You will get the transcript. Score fluency (0-100: how naturally and quickly he kept the conversation going, initiative, response length appropriate to a real conversation) and grammar (0-100: grammatical accuracy of his sentences, be fair and age-appropriate, not overly strict). Respond ONLY with valid JSON, no markdown fences, no explanation, in exactly this shape: {"fluency": number, "grammar": number, "feedback_en": "one short encouraging sentence in very simple English for the student", "feedback_kr": "학부모를 위한 1~2문장 한국어 코멘트, 오늘 대화에서 잘한 점과 다음에 시도해볼 점을 구체적으로"}`;
+
+  try{
+    const response = await fetch("/.netlify/functions/ai", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-5",
+        max_tokens:400,
+        system: sys,
+        messages:[{role:'user', content:transcript}]
+      })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    let clean = textBlock ? textBlock.text.trim() : '{}';
+    clean = clean.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    showResult(parsed, pronScore);
+  }catch(e){
+    showResult({fluency:75, grammar:75, feedback_en:"Great effort today, keep talking every day!", feedback_kr:"오늘도 수고했어요. 채점 서버에 문제가 있어 추정 점수로 표시돼요."}, pronScore);
+  }
+}
+
+async function showResult(scoreObj, pronScore){
+  const fluency = Math.max(0, Math.min(100, Math.round(scoreObj.fluency||70)));
+  const grammar = Math.max(0, Math.min(100, Math.round(scoreObj.grammar||70)));
+  const pronunciation = Math.max(0, Math.min(100, Math.round(pronScore)));
+  const total = Math.round((fluency+grammar+pronunciation)/3);
+
+  let tier = "Keep Practicing";
+  if(total>=100) tier = "Excellent";
+  else if(total>=90) tier = "Great";
+  else if(total>=80) tier = "Good";
+
+  document.getElementById('result-loading').classList.add('hidden');
+  document.getElementById('result-content').classList.remove('hidden');
+  document.getElementById('result-score').textContent = total;
+  const tierChip = document.getElementById('result-tier');
+  tierChip.textContent = tier;
+  tierChip.style.background = tierColor(tier);
+  tierChip.style.color = '#1A1F42';
+
+  animateBar('bar-fluency', fluency);
+  animateBar('bar-grammar', grammar);
+  animateBar('bar-pron', pronunciation);
+
+  document.getElementById('feedback-en').textContent = "💬 " + (scoreObj.feedback_en || "Nice work today!");
+  document.getElementById('feedback-kr').textContent = scoreObj.feedback_kr || "";
+
+  const now = new Date();
+  const dayIdx = dayOfYear(now);
+  const variant = dayIdx % 4;
+  const stampSvg = buildStampSvg(tier, variant);
+  document.getElementById('stampSvgWrap').innerHTML = stampSvg;
+  document.getElementById('stamp-card').style.background = `linear-gradient(160deg, ${tierColor(tier)}33, transparent)`;
+  document.getElementById('stamp-card').style.border = `1px solid ${tierColor(tier)}`;
+
+  // persist
+  const index = await loadIndex();
+  const filtered = index.filter(e=>e.date!==todayStr);
+  filtered.unshift({date:todayStr, tier, total, topic:todayTopic.en, variant});
+  await saveIndex(filtered);
+  localStorage.setItem('day:'+todayStr, JSON.stringify({
+    date:todayStr, topic:todayTopic.en, transcript:messages,
+    fluency, grammar, pronunciation, total, tier,
+    feedbackEn:scoreObj.feedback_en, feedbackKr:scoreObj.feedback_kr
+  }));
+}
+
+function animateBar(id, value){
+  const el = document.getElementById(id);
+  requestAnimationFrame(()=>{ el.style.width = value+'%'; });
+}
+
+/* ---- Stamp mascot generator: chibi character, tier-colored, 4 expression variants ---- */
+function buildStampSvg(tier, variant){
+  const color = tierColor(tier).replace('var(--','').replace(')','');
+  const colorMap = {gold:'#FFC145', silver:'#9FA8FF', bronze:'#E39B6B', muted:'#9BA3C6'};
+  const ring = colorMap[color] || '#9FA8FF';
+  const mouths = [
+    `<path d="M55 100 Q75 122 95 100 L92 108 Q75 118 58 108 Z" fill="#5A2A1E"/><rect x="63" y="100" width="24" height="6" fill="#fff"/>`, // big open grin w/ teeth
+    `<path d="M58 100 Q75 112 92 100" stroke="#5A2A1E" stroke-width="5" fill="none" stroke-linecap="round"/>`, // closed smile
+    `<path d="M55 98 Q75 118 95 98 L90 104 Q75 112 60 104 Z" fill="#5A2A1E"/><rect x="66" y="98" width="18" height="5" fill="#fff"/>`, // gap-tooth grin
+    `<ellipse cx="75" cy="104" rx="16" ry="10" fill="#5A2A1E"/><rect x="61" y="98" width="28" height="6" fill="#fff"/>` // wide laugh
+  ];
+  const eyes = variant===3
+    ? `<path d="M52 78 Q60 68 68 78" stroke="#2A2A2A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M82 78 Q90 68 98 78" stroke="#2A2A2A" stroke-width="4" fill="none" stroke-linecap="round"/>`
+    : `<path d="M50 80 Q60 88 70 80" stroke="#2A2A2A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80 80 Q90 88 100 80" stroke="#2A2A2A" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  const sparkle = tier==='Excellent' ? `<circle cx="30" cy="30" r="3" fill="${ring}"/><circle cx="122" cy="24" r="4" fill="${ring}"/><circle cx="115" cy="115" r="3" fill="${ring}"/>` : '';
+  return `<svg viewBox="0 0 150 150" width="150" height="150">
+    <circle cx="75" cy="82" r="62" fill="none" stroke="${ring}" stroke-width="4" stroke-dasharray="6 5"/>
+    ${sparkle}
+    <circle cx="75" cy="86" r="48" fill="#FFDDBF"/>
+    <ellipse cx="52" cy="98" rx="9" ry="6" fill="#FF9E8A" opacity="0.55"/>
+    <ellipse cx="98" cy="98" rx="9" ry="6" fill="#FF9E8A" opacity="0.55"/>
+    <path d="M22 60 Q75 8 128 60 Q128 34 75 30 Q22 34 22 60 Z" fill="#20233F"/>
+    <path d="M28 55 L35 70 M42 50 L47 68 M56 47 L59 68 M70 46 L71 68 M84 47 L83 68 M98 50 L95 68 M112 55 L107 70" stroke="#20233F" stroke-width="6" stroke-linecap="round"/>
+    ${eyes}
+    ${mouths[variant]}
+  </svg>`;
+}
+</script>
+</body>
+</html>
