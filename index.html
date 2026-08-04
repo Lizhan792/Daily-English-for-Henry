@@ -264,9 +264,9 @@
       <div class="caption-role" style="color:#B8860B;">COACH NOTES</div>
       <div id="coachText"></div>
     </div>
-    <div class="caption-box">
+    <div class="caption-box" id="myBox" style="max-height:130px; overflow-y:auto;">
       <div class="caption-role kr">내가 말한 내용</div>
-      <div id="myText" style="color:var(--muted);">—</div>
+      <div id="myText" style="color:var(--muted); font-size:13px; line-height:1.5;">—</div>
     </div>
     <div class="live-caption" id="liveCaption">&nbsp;</div>
     <div class="mic-row">
@@ -408,6 +408,7 @@ let lastInterim = '';
 let timerInterval = null;
 let secondsLeft = SESSION_MINUTES*60;
 let vocabData = null, quizIndex = 0, quizScore = 0;
+let wrapupGiven = false, wrapupDue = false;
 let pendingScoreResolve = null;
 
 function pad(n){return n.toString().padStart(2,'0');}
@@ -546,6 +547,7 @@ async function replayToday(prefix, date){
 function startQuest(){
   messages = []; confidences = [];
   secondsLeft = SESSION_MINUTES*60;
+  wrapupGiven = false; wrapupDue = false;
   todayTeacher = TEACHERS[dayOfYear(new Date()) % TEACHERS.length];
   showScreen('screen-quest');
   document.getElementById('quest-topic-pill').textContent = todayTopic.en;
@@ -567,7 +569,40 @@ function startTimer(){
     secondsLeft--;
     if(secondsLeft<=0){ clearInterval(timerInterval); finishTimeUp(); return; }
     document.getElementById('timer').textContent = Math.floor(secondsLeft/60)+":"+pad(secondsLeft%60);
+    if(secondsLeft===180 && !wrapupGiven){
+      if(!listening){ wrapupGiven = true; triggerWrapup(); }
+      else{ wrapupDue = true; } // fire right after the current turn finishes
+    }
   },1000);
+}
+
+/* ---- 3-minute-remaining overall recap, both modes ---- */
+async function triggerWrapup(){
+  document.getElementById('micBtn').classList.add('disabled');
+  document.getElementById('partnerText').textContent = "...";
+  let sys;
+  const transcript = messages.length ? messages.map(m=>(m.role==='user'?'STUDENT: ':'PARTNER: ')+m.content).join('\n') : 'No conversation yet.';
+  if(currentMode==='child'){
+    sys = `You are ${todayTeacher.name}. There are about 3 minutes left in today's English conversation practice with ${studentName}, an 11-year-old Korean student. Based on the conversation transcript below, give a short, warm overall recap (2-3 sentences) of what you talked about today and one specific thing he did well, in very simple spoken English. Then end with one friendly question to keep chatting for the last few minutes. No emojis, no markdown, no stage directions. Plain spoken English only.`;
+  } else {
+    sys = `You are ${todayTeacher.name}. There are about 3 minutes left in today's OPIc-style business English practice session. Based on the conversation transcript below, give a short overall recap (2-3 sentences) of what was discussed today and one specific strength, in natural spoken English suited for a business coach. Then end with one follow-up question to keep the conversation going for the last few minutes.
+Respond in EXACTLY this two-line format, nothing else:
+REPLY: <your recap and follow-up question, plain English>
+FEEDBACK: N/A`;
+  }
+  try{
+    const response = await fetch("/.netlify/functions/ai", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"claude-sonnet-5", max_tokens:250, system:sys, messages:[{role:'user', content:transcript}] })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    const raw = textBlock ? textBlock.text.trim() : "We're doing great! Let's keep chatting for a few more minutes.";
+    document.getElementById('micBtn').classList.remove('disabled');
+    applyPartnerRaw(raw);
+  }catch(e){
+    document.getElementById('micBtn').classList.remove('disabled');
+  }
 }
 
 /* ---- Voice-only speech recognition, toggle start/stop ---- */
@@ -592,7 +627,15 @@ function setupSpeech(){
       else interim += r[0].transcript;
     }
     if(interim) lastInterim = interim;
-    document.getElementById('liveCaption').textContent = interim ? interim : '\u00A0';
+    // Show the FULL running transcript (everything said so far this turn),
+    // not just the latest fragment — never erase what was already recognized.
+    const running = (finalChunks.join(' ') + (interim ? ' ' + interim : '')).trim();
+    if(running){
+      const myText = document.getElementById('myText');
+      myText.textContent = running;
+      myText.style.color = 'var(--text)';
+      document.getElementById('myBox').scrollTop = document.getElementById('myBox').scrollHeight;
+    }
   };
   recognition.onerror = (e)=>{
     if(e.error === 'no-speech') return; // keep listening
@@ -616,7 +659,9 @@ function manualMicTap(){
   if(!recognition) return;
   if(!listening){
     finalChunks = []; confidences = []; lastInterim = '';
-    document.getElementById('liveCaption').textContent = '\u00A0';
+    document.getElementById('myText').textContent = '...';
+    document.getElementById('myText').style.color = 'var(--muted)';
+    document.getElementById('liveCaption').textContent = '🎙️ Listening...';
     try{ recognition.start(); }catch(e){ return; }
     listening = true;
     document.getElementById('micBtn').classList.add('listening');
@@ -642,8 +687,11 @@ function finishListening(){
   }
   if(!text){
     document.getElementById('micHint').textContent = "잘 안들렸어요. 마이크를 다시 눌러 말해보세요.";
+    document.getElementById('myText').textContent = '—';
+    document.getElementById('myText').style.color = 'var(--muted)';
     return;
   }
+  document.getElementById('myText').textContent = text;
   document.getElementById('micHint').textContent = "마이크를 눌러 말을 시작하고, 다 말했으면 다시 눌러주세요";
   const avgConf = confidences.length ? confidences.reduce((a,b)=>a+b,0)/confidences.length : null;
   handleUserSpeech(text, avgConf);
@@ -664,6 +712,10 @@ async function handleUserSpeech(text, confidence){
   const raw = await callClaudeConversation(false);
   document.getElementById('micBtn').classList.remove('disabled');
   applyPartnerRaw(raw);
+  if(wrapupDue && !wrapupGiven){
+    wrapupGiven = true; wrapupDue = false;
+    setTimeout(triggerWrapup, 1500);
+  }
 }
 
 function applyPartnerRaw(raw){
