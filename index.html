@@ -404,6 +404,7 @@ let confidences = [];
 let recognition = null;
 let listening = false;
 let finalChunks = [];
+let lastInterim = '';
 let timerInterval = null;
 let secondsLeft = SESSION_MINUTES*60;
 let vocabData = null, quizIndex = 0, quizScore = 0;
@@ -590,6 +591,7 @@ function setupSpeech(){
       if(r.isFinal){ finalChunks.push(r[0].transcript.trim()); if(typeof r[0].confidence==='number') confidences.push(r[0].confidence); }
       else interim += r[0].transcript;
     }
+    if(interim) lastInterim = interim;
     document.getElementById('liveCaption').textContent = interim ? interim : '\u00A0';
   };
   recognition.onerror = (e)=>{
@@ -597,18 +599,23 @@ function setupSpeech(){
     document.getElementById('micHint').textContent = "마이크에 문제가 있어요. 다시 눌러 시도해보세요.";
   };
   recognition.onend = ()=>{
+    // Fires after any stop (manual button press, browser auto-timeout, or error).
+    // The final transcript for the last bit of speech typically arrives in an
+    // onresult event right before this fires, so we finalize HERE, not at the
+    // moment stop() is called.
     if(listening){
-      // browser auto-stopped (e.g. long silence) while user still holds "listening" state
       listening = false;
-      finishListening();
+      document.getElementById('micBtn').classList.remove('listening');
+      document.getElementById('micBtn').textContent = '🎙️';
     }
+    finishListening();
   };
 }
 
 function manualMicTap(){
   if(!recognition) return;
   if(!listening){
-    finalChunks = []; confidences = [];
+    finalChunks = []; confidences = []; lastInterim = '';
     document.getElementById('liveCaption').textContent = '\u00A0';
     try{ recognition.start(); }catch(e){ return; }
     listening = true;
@@ -616,17 +623,23 @@ function manualMicTap(){
     document.getElementById('micBtn').textContent = '⏹️';
     document.getElementById('micHint').textContent = "듣고 있어요... 다 말했으면 버튼을 다시 눌러주세요";
   } else {
-    listening = false;
-    document.getElementById('micBtn').classList.remove('listening');
-    document.getElementById('micBtn').textContent = '🎙️';
-    try{ recognition.stop(); }catch(e){}
-    finishListening();
+    document.getElementById('micHint').textContent = "마무리하는 중...";
+    document.getElementById('micBtn').classList.add('disabled');
+    try{ recognition.stop(); }catch(e){ listening=false; finishListening(); }
+    // NOTE: do not finalize here — recognition.onend (above) calls finishListening()
+    // once the browser has delivered any trailing final result.
   }
 }
 
 function finishListening(){
+  document.getElementById('micBtn').classList.remove('disabled');
   document.getElementById('liveCaption').textContent = '\u00A0';
-  const text = finalChunks.join(' ').trim();
+  let text = finalChunks.join(' ').trim();
+  if(!text && lastInterim.trim()){
+    // Some browsers never mark the last phrase as "final" once stop() is called
+    // mid-utterance — fall back to whatever was heard so we don't lose it.
+    text = lastInterim.trim();
+  }
   if(!text){
     document.getElementById('micHint').textContent = "잘 안들렸어요. 마이크를 다시 눌러 말해보세요.";
     return;
